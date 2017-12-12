@@ -1,4 +1,65 @@
-<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2017-12-12 20:23:40"><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description>Creates a global UI Action that will add any record (plus attachments) to the active update set:
+<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2017-12-12 20:25:31"><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description>Creates a global UI Action that will add any record (plus attachments) to the active update set:
 -Appears as link at the bottom of each record
 -For adding multiple records at once, appears as a drop-down menu option on each list
-</description><inserted/><name>Add to Update Set UI Action v1.6</name><origin_sys_id/><release_date/><remote_sys_id>92108f8cdc5c210002adbc7f5f0ed290</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>ben.hollifield@snc_SHARE</sys_created_by><sys_created_on>2016-07-12 17:03:36</sys_created_on><sys_id>972c0dc24fe4aa00e3d8a3618110c73a</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>ben.hollifield@snc_SHARE</sys_updated_by><sys_updated_on>2016-07-12 17:03:36</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set>undefined</unload>
+</description><inserted/><name>Add to Update Set UI Action v1.6</name><origin_sys_id/><release_date/><remote_sys_id>92108f8cdc5c210002adbc7f5f0ed290</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>ben.hollifield@snc_SHARE</sys_created_by><sys_created_on>2016-07-12 17:03:36</sys_created_on><sys_id>972c0dc24fe4aa00e3d8a3618110c73a</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>ben.hollifield@snc_SHARE</sys_updated_by><sys_updated_on>2016-07-12 17:03:36</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set><?xml version="1.0" encoding="UTF-8"?><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description>Creates a global UI Action that will add any record (plus attachments) to the active update set:
+-Appears as link at the bottom of each record
+-For adding multiple records at once, appears as a drop-down menu option on each list
+</description><inserted/><name>Add to Update Set UI Action v1.6</name><origin_sys_id/><release_date/><remote_sys_id>92108f8cdc5c210002adbc7f5f0ed290</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>ben.hollifield@snc_SHARE</sys_created_by><sys_created_on>2016-07-12 17:03:36</sys_created_on><sys_id>972c0dc24fe4aa00e3d8a3618110c73a</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>ben.hollifield@snc_SHARE</sys_updated_by><sys_updated_on>2016-07-12 17:03:36</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set><?xml version="1.0" encoding="UTF-8"?><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_action_131e99ed49e8950002ad45cc9609026f</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="sys_ui_action"&gt;&lt;sys_ui_action action="INSERT_OR_UPDATE"&gt;&lt;action_name&gt;add_update_set&lt;/action_name&gt;&lt;active&gt;true&lt;/active&gt;&lt;client&gt;false&lt;/client&gt;&lt;comments&gt;Use this UI Action to force any record (and it's attachments) into the current update set.&lt;/comments&gt;&lt;condition&gt;gs.hasRole('admin')&lt;/condition&gt;&lt;form_action&gt;true&lt;/form_action&gt;&lt;form_button&gt;false&lt;/form_button&gt;&lt;form_context_menu&gt;false&lt;/form_context_menu&gt;&lt;form_link&gt;true&lt;/form_link&gt;&lt;hint/&gt;&lt;list_action&gt;true&lt;/list_action&gt;&lt;list_banner_button&gt;false&lt;/list_banner_button&gt;&lt;list_button&gt;false&lt;/list_button&gt;&lt;list_choice&gt;true&lt;/list_choice&gt;&lt;list_context_menu&gt;false&lt;/list_context_menu&gt;&lt;list_link&gt;false&lt;/list_link&gt;&lt;list_save_with_form_button&gt;false&lt;/list_save_with_form_button&gt;&lt;name&gt;Add to Update Set&lt;/name&gt;&lt;onclick/&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[addToUpdateSet();
+
+function addToUpdateSet(){
+	//Get current URL for return
+	var url = GlideSession.get().getStack().bottom();
+	
+	//Save current record
+	current.update();
+	
+	//Initialize updateManager
+	var updateManager = new GlideUpdateManager2();
+	
+	//Add record to update set
+	updateManager.saveRecord(current);
+	
+	//If the current record is an attachment, add the chunks
+	//(Attachments and chunks for other record types are auto-added)
+	if (current.getTableName() == 'sys_attachment')
+		addAttachmentChunks(current);
+
+	//If attachments are not detected, check the sys_attachment table anyway
+	//(Known attachments are auto-added, missing unknown attachments)
+	//(sys_user seems to be an exception)
+	else if (!current.hasAttachments() &amp;&amp; current.getTableName() != 'sys_user')
+		addAttachments(current);
+	
+	//Display confirmation
+	var currentSet = new GlideRecord('sys_update_set');
+	currentSet.get(gs.getPreference('sys_update_set'));
+	gs.flushMessages(); //Flush to avoid multiples when list updating
+	gs.addInfoMessage('Record(s) added to update set ' + currentSet.name + '.');
+	action.setRedirectURL(url);
+}
+
+//Add attachments to the update set
+function addAttachments(record){
+	var updateManager = new GlideUpdateManager2();
+	var attach = new GlideRecord("sys_attachment");
+	attach.addQuery("table_sys_id", record.sys_id.toString());
+	attach.query();
+	while (attach.next()) {
+		//Process main sys_attachment record
+		updateManager.saveRecord(attach);
+		
+		//Process sys_attachment_doc chunks
+		addAttachmentChunks(attach);
+	}
+}
+
+//Add attachment chunks to the update set
+function addAttachmentChunks(attachment){
+	var updateManager = new GlideUpdateManager2();
+	var attach_doc = new GlideRecord("sys_attachment_doc");
+	attach_doc.addQuery("sys_attachment", attachment.sys_id.toString());
+	attach_doc.orderBy("position");
+	attach_doc.query();
+	while (attach_doc.next())
+		updateManager.saveRecord(attach_doc);
+}]]&gt;&lt;/script&gt;&lt;show_insert&gt;true&lt;/show_insert&gt;&lt;show_multiple_update&gt;false&lt;/show_multiple_update&gt;&lt;show_query&gt;false&lt;/show_query&gt;&lt;show_update&gt;true&lt;/show_update&gt;&lt;sys_class_name&gt;sys_ui_action&lt;/sys_class_name&gt;&lt;sys_created_by&gt;ben.hollifield_SHARE_SHARE&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2013-10-21 00:09:52&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_id&gt;131e99ed49e8950002ad45cc9609026f&lt;/sys_id&gt;&lt;sys_mod_count&gt;17&lt;/sys_mod_count&gt;&lt;sys_name&gt;Add to Update Set&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package/&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_action_131e99ed49e8950002ad45cc9609026f&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;ben.hollifield@snc_SHARE&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2016-07-12 17:03:01&lt;/sys_updated_on&gt;&lt;table&gt;global&lt;/table&gt;&lt;ui11_compatible&gt;true&lt;/ui11_compatible&gt;&lt;ui16_compatible&gt;false&lt;/ui16_compatible&gt;&lt;/sys_ui_action&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Add to Update Set UI Action v1.6">972c0dc24fe4aa00e3d8a3618110c73a</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>ben.hollifield@snc_SHARE</sys_created_by><sys_created_on>2016-07-12 17:03:36</sys_created_on><sys_id>1b2c0dc24fe4aa00e3d8a3618110c73a</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>ben.hollifield@snc_SHARE</sys_updated_by><sys_updated_on>2016-07-12 17:03:36</sys_updated_on><table>global</table><target_name>Add to Update Set</target_name><type>UI Action</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml></unload>
