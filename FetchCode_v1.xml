@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2017-12-12 21:22:45"><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description/><inserted/><name>FetchCode_v1</name><origin_sys_id/><release_date/><remote_sys_id>5ec89cf3db390f405dbe38f0ad961962</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2017-12-12 21:22:44</sys_created_on><sys_id>390f6538db030b00497856f3ce961961</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2017-12-12 21:22:44</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_script_include_8cd963e6dbb58b405dbe38f0ad961929</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_script_include"&gt;&lt;sys_script_include action="INSERT_OR_UPDATE"&gt;&lt;access&gt;public&lt;/access&gt;&lt;active&gt;true&lt;/active&gt;&lt;api_name&gt;global.fetchCodeUtils&lt;/api_name&gt;&lt;client_callable&gt;false&lt;/client_callable&gt;&lt;description/&gt;&lt;name&gt;fetchCodeUtils&lt;/name&gt;&lt;script&gt;&lt;![CDATA[var fetchCodeUtils = Class.create();
+fetchCodeUtils.prototype = Object.extendsObject(AbstractScriptProcessor,{
+	initialize: function() {
+	},
+	
+	search: null,
+	
+	delimiter: ",",
+	
+	resultsObject: {
+		
+	},
+	
+	debug: false,
+	
+	useAndQuery: true,
+	
+	resultFormat: 'both',
+	
+	instancePath: "https://" + gs.getProperty('instance_name') + ".service-now.com/",
+	
+	fieldName: '',
+	
+	additionalFilter: '',
+	
+	searchForTerm: function(term, useAndQuery, debug, delimiter,additionalFilter) {
+		if (typeof debug != "undefined") this.debug = debug;
+			if (typeof delimiter != "undefined") this.delimiter = delimiter;
+			if (typeof useAndQuery != "undefined") this.useAndQuery = useAndQuery;
+			if (typeof additionalFilter != "undefined") this.additionalFilter = additionalFilter;
+			if (typeof term != "string") {
+			gs.info("GlobalScriptSearch - ERROR: must pass a valid search term to search");
+			return {
+				"error":"ERROR: must pass a valid search term to search"
+			};
+		}
+		this.search = term;
+		this._searchLocations();
+		this._searchFieldTypes();
+		this._searchWorkflow();
+		return JSON.stringify(this.resultsObject);
+	},
+	
+	_searchLocations: function() {
+		var locations = {
+			"question": "default_value",
+			"sys_trigger": "job_context",
+			"sys_dictionary": "calculation",
+			"sys_dictionary_override": "calculation",
+			"sys_ui_macro": "xml",
+			"sys_ui_page": "html",
+			"sys_impex_entry": "default_value",
+			"content_block_programmatic": "programmatic_content",
+		}
+		for (var location in locations) {
+			this._searchLocation(location, locations[location]);
+		}
+	},
+	
+	/* Builds a the dynamic list of field names from sys_dictionary that should be searched */
+	_searchFieldTypes: function() {
+		var fieldList = new GlideRecord("sys_dictionary");
+		var fieldTypes = ["script_plain", "script", "email_script", "condition_string", "conditions"];
+		var aq = null;
+		for (var ic = 0; ic &lt; fieldTypes.length; ic++) {
+			if (aq == null)
+				aq = fieldList.addQuery("internal_type", fieldTypes[ic]);
+			else
+				aq.addOrCondition("internal_type", fieldTypes[ic]);
+		}
+		this._searchFieldsNamedScript(aq);
+		
+		//exclude all field types that don't come from String
+		var nonString = new GlideRecord("sys_glide_object");
+		nonString.addQuery("scalar_type", "!=", "string");
+		nonString.query();
+		while (nonString.next()) {
+			fieldList.addQuery("internal_type", "!=", nonString.name + "");
+		}
+		fieldList.addQuery("internal_type", "!=", "boolean");
+		fieldList.query();
+		while (fieldList.next()) {
+			if (fieldList.name.indexOf("var__") &gt;= 0)
+				continue;
+			this.fieldName = fieldList.column_label;
+			this._searchLocation(fieldList.name, fieldList.element);
+		}
+	},
+	
+	// Adds an OR condition to fieldList for any field whose name starts or ends with "script"
+	_searchFieldsNamedScript: function(addQuery) {
+		addQuery.addOrCondition("element", "ENDSWITH", "script");
+		addQuery.addOrCondition("element", "STARTSWITH", "script");
+	},
+	
+	/* Special handling for the workflow variable fields */
+	_searchWorkflow: function() {
+		var allDocs = [];
+		var tableName = 'sys_variable_value';
+		var fieldName = 'value';
+		var rec = new GlideRecord(tableName);
+		rec.addQuery('document', 'wf_activity');
+		var qc = rec.addQuery('variable.element', 'CONTAINS', 'script');
+		qc.addOrCondition('variable.internal_type', 'CONTAINS', 'script');
+		var terms = this.search.split(this.delimiter);
+		for (var ib = 0; ib &lt; terms.length; ib++) {
+			if (this.useAndQuery) {
+				rec.addQuery(fieldName, 'CONTAINS', terms[ib]);
+			} else {
+				if (ib == 0)
+					var aq = rec.addQuery(fieldName, "CONTAINS", terms[ib]);
+				else
+					aq.addOrCondition(fieldName, "CONTAINS", terms[ib]);
+			}
+		}
+		this._addMatches(tableName, fieldName, rec);
+	},
+	
+	/* Looks in a particluar field in a particular table for all documents that match the search term. */
+	_searchLocation: function(table, field) {
+		var fieldName = field + "";
+		var tableName = table + "";
+		if (this.debug)
+			gs.info("_searchLocation: " + tableName + " " + fieldName);
+		var target = new GlideRecord(tableName);
+		if (!target.isValid()) {
+			gs.info("GlobalScriptSearch - ERRROR: " + tableName + " was an invalid table name (field: " + fieldName + ").");
+			return;
+		}
+		var terms = this.search.split(this.delimiter);
+		if (this.debug)
+			gs.info("_searchLocation: terms.length " + terms.length);
+		if (this.useAndQuery) {
+			for (var ia = 0; ia &lt; terms.length; ia++) {
+				target.addQuery(fieldName, "CONTAINS", terms[ia]);
+			}
+		} else {
+			var aq;
+			for (var ia = 0; ia &lt; terms.length; ia++) {
+				if (ia == 0)
+					var aq = target.addQuery(fieldName, "CONTAINS", terms[ia]);
+				else
+					aq.addOrCondition(fieldName, "CONTAINS", terms[ia]);
+			}
+		}
+		// add additional Query
+		if(this.additionalFilter)
+			target.addEncodedQuery("^"+this.additionalFilter);
+		
+		this._addMatches(tableName, fieldName, target);
+	},
+	
+	/* Output matching files to the logs. */
+	_addMatches: function(tableName, fieldName, match) {
+		try {
+			// Query and return if no matches found
+			
+			match.query();
+			gs.info("fetchCodeUtils: Encoded Query: "+tableName+":"+match.getEncodedQuery())
+			if (match.getRowCount() &lt; 1)
+				return;
+			
+			// Create array to store matches
+			var matchList = [];
+			
+			
+			// Create table object if it doesnt already exist
+			if(!this.resultsObject[tableName]){
+				// Get table GlideRecord
+				var tableLabel = tableName;
+				var targetTable = new GlideRecord('sys_db_object');
+				if(targetTable.get('name',tableName)){
+					tableLabel = targetTable.label.toString();
+				}
+
+				if(tableLabel.substring(tableLabel.length-1)!='s'){
+					tableLabel = tableLabel+'s'
+				}
+				// Create Object
+				this.resultsObject[tableName] = {
+					tableLabel:tableLabel.toString(),
+					fields:{
+						
+					},
+					recordsMatched:0,
+					fieldNameList:"",
+					path:this.instancePath+tableName+'_list.do?sysparm_query=sys_idIN'
+				};
+			}
+			
+			// Create field object if it doesnt already exist
+			if(!this.resultsObject[tableName].fields[fieldName]){
+				this.resultsObject[tableName].fields[fieldName] = {
+					matches:{
+						
+					},
+					fieldNameList:"",
+					label: this.fieldName.toString() || fieldName,
+					recordsMatched:0
+				};
+			}
+			
+			// Add matches to object
+			while(match.next()) {
+				matchList.push(match.sys_id+"");
+				this.resultsObject[tableName].fields[fieldName].matches[match.sys_id] = {
+					name:match.getDisplayValue(),
+					updated_by:match.sys_updated_by.toString(),
+					updated_on:match.sys_updated_on.toString(),
+					path: this.instancePath+tableName + ".do?sys_id=" + match.sys_id
+				};
+				
+				// Add sys_id of match to list of matches
+				this.resultsObject[tableName].fieldNameList+=match.sys_id.toString()+",";
+				this.resultsObject[tableName].fields[fieldName].fieldNameList+=match.sys_id.toString()+",";
+				
+				// Count matches
+				this.resultsObject[tableName].recordsMatched++;
+				this.resultsObject[tableName].fields[fieldName].recordsMatched++;
+			}
+			
+			
+		} catch(e) {
+			gs.info("GlobalScriptSearch - ERRROR: failure while trying to insert match " + e);
+		}
+	},
+	type: 'fetchCodeUtils'
+});
+
+]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_script_include&lt;/sys_class_name&gt;&lt;sys_created_by&gt;brent.llewellyn&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-10-17 13:33:21&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;8cd963e6dbb58b405dbe38f0ad961929&lt;/sys_id&gt;&lt;sys_mod_count&gt;65&lt;/sys_mod_count&gt;&lt;sys_name&gt;fetchCodeUtils&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_script_include_8cd963e6dbb58b405dbe38f0ad961929&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;brent.llewellyn&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-10-20 13:30:59&lt;/sys_updated_on&gt;&lt;/sys_script_include&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="FetchCode_v1">390f6538db030b00497856f3ce961961</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2017-12-12 21:22:44</sys_created_on><sys_id>3d0f6538db030b00497856f3ce961961</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2017-12-12 21:22:44</sys_updated_on><table/><target_name>fetchCodeUtils</target_name><type>Script Include</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_script_559c01bedb798b405dbe38f0ad9619b1</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_ui_script"&gt;&lt;sys_ui_script action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;description/&gt;&lt;global&gt;false&lt;/global&gt;&lt;name&gt;FetchCode&lt;/name&gt;&lt;script&gt;&lt;![CDATA[&lt;html lang="en"&gt;
+&lt;script src="fc_AngularJS_v1.6.4.jsdbx"&gt;&lt;/script&gt;
+
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+    &lt;meta name="description" content=""&gt;
+    &lt;meta name="author" content=""&gt;
+    &lt;title&gt;FetchCode&lt;/title&gt;
+    &lt;!-- Bootstrap core CSS --&gt;
+    &lt;link href="88db457edb798b405dbe38f0ad96197c.cssdbx" rel="stylesheet"&gt;
+    &lt;!-- Custom styles for this template --&gt;
+    &lt;style&gt;
+    body {
+        padding-top: 54px;
+    }
+
+    @media (min-width: 992px) {
+        body {
+            padding-top: 56px;
+        }
+    }
+
+    .loader {
+        position: relative;
+        left: 50%;
+        margin: 0px 0 0 -75px;
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+    }
+
+    @-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body ng-app="FetchCode"&gt;
+    &lt;div ng-controller="searchUtils"&gt;
+        &lt;script type="text/javascript" src="fc_functions.jsdbx"&gt;&lt;/script&gt;
+        &lt;!-- Navigation --&gt;
+        &lt;nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top"&gt;
+            &lt;div class="container"&gt;
+                &lt;img src="FetchCode_Banner.png" width="100" height="35"/&gt;
+            &lt;/div&gt;
+        &lt;/nav&gt;
+        &lt;!-- Page Content --&gt;
+        &lt;div class="container" &gt;
+            &lt;div class="row"&gt;
+                    &lt;div class="col-lg-3"&gt;
+                    &lt;/div&gt;
+                &lt;div class="col-lg-6 text-center"&gt;
+                    &lt;img src="FetchCode_Main.png" /&gt;
+                    &lt;p class="lead"&gt;Complete the following form and go FetchCode&lt;/p&gt;
+                    &lt;br/&gt;
+                    &lt;div class=" text-left"&gt;
+                        &lt;form&gt;
+                            &lt;div class="form-group "&gt;
+                                &lt;label for="searchTerm "&gt;Comma seperated list of terms to search for: &lt;/label&gt;
+                                &lt;input placeholder="FetchCode" required="required" ng-model="searchTerm" ng-keypress="($event.charCode==13)? performSearch() : return" class="form-control" id="exampleTextarea "&gt;&lt;/input&gt;
+                                &lt;div class="text-right"&gt;&lt;small&gt;Example: knowledge,base&lt;/small&gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div class="form-group "&gt;
+                                &lt;label for="searchType "&gt;Based on the above terms do an "AND" or an "OR" query:&lt;/label&gt;
+                                &lt;select ng-model="searchType" ng-init="searchType = searchTypes[1]" ng-keypress="($event.charCode==13)? performSearch() : return" class="form-control" ng-options="item for item in searchTypes"&gt;
+                                &lt;/select&gt;
+                            &lt;/div&gt;
+                            &lt;div class="form-group "&gt;
+                                &lt;label for="additionalFilter "&gt;Additional query to add to search in an encoded query format: &lt;/label&gt;
+                                &lt;input ng-model="additionalFilter" ng-keypress="($event.charCode==13)? performSearch() : return" class="form-control" id="exampleTextarea "&gt;&lt;/input&gt;
+                                &lt;div class="text-right"&gt;&lt;small&gt;Example: active=true^sys_created_by=admin&lt;/small&gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;button type="submit " class="btn btn-default " ng-click="performSearch()"&gt;Go FetchCode&lt;/button&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                    &lt;div class="col-lg-3"&gt;
+                    &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;br/&gt;
+        &lt;div class="container"&gt;
+            &lt;div class="row"&gt;
+                &lt;div class="col-lg-12"&gt;
+                    &lt;hr class="mt-5" /&gt;
+                    &lt;div class="collapse-group"&gt;
+                        &lt;div class="controls text-right"&gt;
+                            &lt;button class="btn btn-default open-button pull-right" type="button"&gt;
+                                Expand all
+                            &lt;/button&gt;
+                            &lt;button class="btn btn-default close-button" type="button"&gt;
+                                Collapse all
+                            &lt;/button&gt;
+                        &lt;/div&gt;
+                        &lt;h1 class="lead text-center"&gt;Code Search Results&lt;/h1&gt;
+                        &lt;div ng-if="gettingData" class="loader center-block"&gt;
+                        &lt;/div&gt;
+                        &lt;div ng-if="gettingData == false &amp;&amp; responseStatus == 'success'" class="panel panel-default"&gt;
+                            &lt;div ng-repeat="table in searchResults"&gt;
+                                &lt;button style="width:100%;background-color: #343a40;color: white" class="panel panel-default panel-heading text-left" data-toggle="collapse" data-target="#tableMenu_{{$index}}"&gt;{{table.tableLabel}} &lt;span style="color: white" class="badge"&gt; &lt;sup&gt;{{table.recordsMatched}}&lt;/sup&gt; &lt;/span&gt;&lt;/button&gt;
+                                &lt;div id="tableMenu_{{$index}}" class="collapse"&gt;
+                                    &lt;a href="{{table.path}}{{table.fieldNameList}}"&gt;List View&lt;/a&gt;
+                                    &lt;ul style="list-style-type: none"&gt;
+                                        &lt;li ng-repeat="field in table.fields"&gt;
+                                            &lt;button style="width:100%; background-color: #4a545e;color: white" class="panel panel-default panel-heading text-left" data-toggle="collapse" data-target="#fieldMenu_{{$parent.$index}}_{{$index}}"&gt;{{field.label}} field &lt;span style="color: white" class="badge"&gt; &lt;sup&gt;{{field.recordsMatched}}&lt;/sup&gt; &lt;/span&gt;&lt;/button&gt;
+                                            &lt;div id="fieldMenu_{{$parent.$index}}_{{$index}}" class="collapse"&gt;
+                                                &lt;table class="table table-hover table-bordered"&gt;
+                                                    &lt;tr style="background-color: #526577;color: white"&gt;
+                                                        &lt;td&gt;
+                                                            Record
+                                                        &lt;/td&gt;
+                                                        &lt;td&gt;
+                                                            Updated By
+                                                        &lt;/td&gt;
+                                                        &lt;td&gt;
+                                                            Updated On
+                                                        &lt;/td&gt;
+                                                    &lt;/tr&gt;
+                                                    &lt;tr ng-repeat="match in field.matches"&gt;
+                                                        &lt;td&gt;
+                                                            &lt;a href="{{match.path}}"&gt;{{match.name}}&lt;/a&gt;
+                                                        &lt;/td&gt;
+                                                        &lt;td&gt;
+                                                            {{match.updated_by}}
+                                                        &lt;/td&gt;
+                                                        &lt;td&gt;
+                                                            {{match.updated_on}}
+                                                        &lt;/td&gt;
+                                                    &lt;/tr&gt;
+                                                &lt;/table&gt;
+                                            &lt;/div&gt;
+                                        &lt;/li&gt;
+                                    &lt;/ul&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;div ng-if="gettingData == false &amp;&amp; responseStatus == 'error'" class="panel panel-default"&gt;
+                            {{searchResults}}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;!-- Bootstrap core JavaScript --&gt;
+        &lt;script src="fc_jquery.jsdbx"&gt;&lt;/script&gt;
+        &lt;script src="fc_js_bootstrap.jsdbx"&gt;&lt;/script&gt;
+        &lt;link href="b71a46cbdbf1cb405dbe38f0ad961986.cssdbx" rel="stylesheet"&gt;
+    &lt;/div&gt;
+&lt;/body&gt;]]&gt;&lt;/script&gt;&lt;script_name/&gt;&lt;sys_class_name&gt;sys_ui_script&lt;/sys_class_name&gt;&lt;sys_created_by&gt;brent.llewellyn&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-10-17 20:42:21&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;559c01bedb798b405dbe38f0ad9619b1&lt;/sys_id&gt;&lt;sys_mod_count&gt;330&lt;/sys_mod_count&gt;&lt;sys_name&gt;FetchCode&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_script_559c01bedb798b405dbe38f0ad9619b1&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;brent.llewellyn&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-10-20 13:33:04&lt;/sys_updated_on&gt;&lt;use_scoped_format&gt;false&lt;/use_scoped_format&gt;&lt;/sys_ui_script&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="FetchCode_v1">390f6538db030b00497856f3ce961961</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2017-12-12 21:22:44</sys_created_on><sys_id>b10f6538db030b00497856f3ce961962</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2017-12-12 21:22:44</sys_updated_on><table/><target_name>FetchCode</target_name><type>UI Script</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_script_1ee33447db31cb405dbe38f0ad961974</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_ui_script"&gt;&lt;sys_ui_script action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;description/&gt;&lt;global&gt;false&lt;/global&gt;&lt;name&gt;fc_functions&lt;/name&gt;&lt;script&gt;&lt;![CDATA[angular.module('FetchCode', [])
+    .controller('searchUtils', ['$location', '$scope', '$http', function($location, $scope, $http) {
+        $scope.formats = ["Records", "Lists", "Both"];
+        $scope.searchTypes = ["And", "Or"];
+        $scope.searchResults = "";
+        $scope.instancePath = $location.absUrl().split('code_search_util')[0];
+        $scope.performSearch = function() {
+
+            var pathObj = {};
+            	pathObj.searchTerm=$scope.searchTerm;
+            	pathObj.searchType=$scope.searchType;
+            	pathObj.additionalFilter=$scope.additionalFilter;
+
+            $location.path('/'+JSON.stringify(pathObj));
+
+        };
+
+        $scope.$on('$locationChangeSuccess', function(event) {
+            try {
+                $scope.gettingData = true;
+                console.log("locationChangeSuccess")
+                var vars = $location.path()
+                var searchParams = JSON.parse(vars.replace('/', '').toString());
+
+                if (searchParams.searchTerm &amp;&amp; searchParams.searchTerm != 'undefined')
+                $scope.searchTerm = searchParams.searchTerm;
+
+                if (searchParams.searchType &amp;&amp; searchParams.searchType != 'undefined')
+                $scope.searchType = searchParams.searchType;
+
+                if (searchParams.additionalFilter &amp;&amp; searchParams.additionalFilter != 'undefined')
+                    $scope.additionalFilter = searchParams.additionalFilter;
+
+                var input = { "searchType": searchParams.searchType, "term": searchParams.searchTerm, "additionalFilter": searchParams.additionalFilter };
+                if (input.term) {
+                    $http.post('/api/snc/objectify/postobject?identifier=FetchCode', input).then(function(response) {
+                        if (response.data.result.error) {
+                            $scope.searchResults = response.data.result.error;
+                            $scope.responseStatus = 'error';
+                        } else {
+                            $scope.searchResults = response.data.result.fetchCode_api;
+                            $scope.responseStatus = 'success';
+                        }
+                        console.log(response.data.result.fetchCode_api);
+                        // console.log($scope)
+
+                    }).finally(function() {
+                        $scope.gettingData = false;
+                    });
+                } else {
+                    $scope.gettingData = false;
+
+                    $scope.searchResults = "Please enter a term to search on";
+                    $scope.responseStatus = 'error';
+                }
+
+            } catch (err) {
+                $scope.gettingData = false;
+            }
+        });
+
+        $(".open-button").on("click", function() {
+            $(this).closest('.collapse-group').find('.collapse').collapse('show');
+        });
+
+        $(".close-button").on("click", function() {
+            $(this).closest('.collapse-group').find('.collapse').collapse('hide');
+        });
+
+    }]);]]&gt;&lt;/script&gt;&lt;script_name/&gt;&lt;sys_class_name&gt;sys_ui_script&lt;/sys_class_name&gt;&lt;sys_created_by&gt;brent.llewellyn&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-10-18 13:32:18&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;1ee33447db31cb405dbe38f0ad961974&lt;/sys_id&gt;&lt;sys_mod_count&gt;118&lt;/sys_mod_count&gt;&lt;sys_name&gt;fc_functions&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_script_1ee33447db31cb405dbe38f0ad961974&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;brent.llewellyn&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-10-20 14:00:55&lt;/sys_updated_on&gt;&lt;use_scoped_format&gt;false&lt;/use_scoped_format&gt;&lt;/sys_ui_script&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="FetchCode_v1">390f6538db030b00497856f3ce961961</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2017-12-12 21:22:44</sys_created_on><sys_id>fd0f6538db030b00497856f3ce961961</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2017-12-12 21:22:44</sys_updated_on><table/><target_name>fc_functions</target_name><type>UI Script</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml></unload>
