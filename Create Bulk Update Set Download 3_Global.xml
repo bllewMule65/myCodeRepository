@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2018-01-16 17:42:07"><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description/><inserted/><name>Create Bulk Update Set Download 3</name><origin_sys_id/><release_date/><remote_sys_id>785c20f8db8fc700497856f3ce9619ee</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>5b2c4988db3b8300497856f3ce96198e</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_script_include_066a985c4f5f3e00e0339ffd0210c770</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_script_include"&gt;&lt;sys_script_include action="INSERT_OR_UPDATE"&gt;&lt;access&gt;package_private&lt;/access&gt;&lt;active&gt;true&lt;/active&gt;&lt;api_name&gt;global.ExportWithRelatedListsMine&lt;/api_name&gt;&lt;client_callable&gt;false&lt;/client_callable&gt;&lt;description/&gt;&lt;name&gt;ExportWithRelatedListsMine&lt;/name&gt;&lt;script&gt;&lt;![CDATA[function ExportWithRelatedListsMine(table, sysid) {  
+  var fileName = null;  
+  ExportWithRelatedLists.call(this, table, sysid);  
+}  
+  
+  
+ExportWithRelatedListsMine.prototype = new ExportWithRelatedLists();  
+ExportWithRelatedListsMine.prototype.constructor = ExportWithRelatedListsMine;  
+  
+  
+ExportWithRelatedListsMine.prototype.getFileName = function() {  
+     if (this.fileName != null) {  
+       return this.fileName;  
+     }  
+     var grName = '';  
+     // if (this.parent_table == 'sys_remote_update_set') {   
+      var gr = new GlideRecord(this.parent_table);  
+      gr.get(this.sys_id);  
+  
+      if (gr.name &amp;&amp; !gr.name.isNil()) {  
+      grName = '_' + gr.name;  
+      }  
+     // }  
+  
+     return (this.parent_table + grName + '_' + this.sys_id + '.xml');  
+};  
+  
+ExportWithRelatedListsMine.prototype.setFileName = function(fileName) {  
+     this.fileName =  fileName; 
+};  ]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_script_include&lt;/sys_class_name&gt;&lt;sys_created_by&gt;justin.ciemiewicz&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-06-07 16:01:39&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;066a985c4f5f3e00e0339ffd0210c770&lt;/sys_id&gt;&lt;sys_mod_count&gt;0&lt;/sys_mod_count&gt;&lt;sys_name&gt;ExportWithRelatedListsMine&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_script_include_066a985c4f5f3e00e0339ffd0210c770&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;justin.ciemiewicz&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-06-07 16:01:39&lt;/sys_updated_on&gt;&lt;/sys_script_include&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Create Bulk Update Set Download 3">5b2c4988db3b8300497856f3ce96198e</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>132c4988db3b8300497856f3ce96198f</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><table/><target_name>ExportWithRelatedListsMine</target_name><type>Script Include</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_action_fb1a56050a0a3c1e01f8b4066aff9aa7</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="sys_ui_action"&gt;&lt;sys_ui_action action="INSERT_OR_UPDATE"&gt;&lt;action_name/&gt;&lt;active&gt;false&lt;/active&gt;&lt;client&gt;false&lt;/client&gt;&lt;comments/&gt;&lt;condition&gt;current.state == 'complete'&lt;/condition&gt;&lt;form_action&gt;true&lt;/form_action&gt;&lt;form_button&gt;false&lt;/form_button&gt;&lt;form_context_menu&gt;false&lt;/form_context_menu&gt;&lt;form_link&gt;true&lt;/form_link&gt;&lt;hint&gt;Create a Retrieved Update Set for exporting&lt;/hint&gt;&lt;list_action&gt;false&lt;/list_action&gt;&lt;list_banner_button&gt;false&lt;/list_banner_button&gt;&lt;list_button&gt;false&lt;/list_button&gt;&lt;list_choice&gt;false&lt;/list_choice&gt;&lt;list_context_menu&gt;false&lt;/list_context_menu&gt;&lt;list_link&gt;false&lt;/list_link&gt;&lt;list_save_with_form_button&gt;false&lt;/list_save_with_form_button&gt;&lt;name&gt;Export to XML&lt;/name&gt;&lt;onclick/&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[var retrievedUpdateSet = new GlideRecord('sys_remote_update_set');
+retrievedUpdateSet.initialize();
+
+retrievedUpdateSet.description = current.description;
+retrievedUpdateSet.name = current.name;
+retrievedUpdateSet.release_date = current.release_date;
+retrievedUpdateSet.remote_sys_id = current.sys_id;
+retrievedUpdateSet.application = current.application;
+
+
+var scopeGr = new GlideRecord('sys_scope');
+scopeGr.get(current.application);
+if (scopeGr.isValid()) {
+	retrievedUpdateSet.application_name = scopeGr.name;
+	retrievedUpdateSet.application_scope = scopeGr.scope;
+	retrievedUpdateSet.application_version = scopeGr.version;
+} 
+
+retrievedUpdateSet.state = "loaded";
+
+var sysid = retrievedUpdateSet.insert();
+
+var update = new GlideRecord('sys_update_xml');
+update.addQuery('update_set', current.sys_id);
+update.query();
+
+while(update.next()) {
+   update.remote_update_set = retrievedUpdateSet.sys_id
+   update.update_set = '';
+   update.insert();
+}
+
+action.setRedirectURL("export_update_set.do?sysparm_sys_id=" + sysid + "&amp;sysparm_delete_when_done=true");]]&gt;&lt;/script&gt;&lt;show_insert&gt;false&lt;/show_insert&gt;&lt;show_multiple_update&gt;false&lt;/show_multiple_update&gt;&lt;show_query&gt;false&lt;/show_query&gt;&lt;show_update&gt;true&lt;/show_update&gt;&lt;sys_class_name&gt;sys_ui_action&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2010-01-04 21:08:03&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_domain_path&gt;/&lt;/sys_domain_path&gt;&lt;sys_id&gt;fb1a56050a0a3c1e01f8b4066aff9aa7&lt;/sys_id&gt;&lt;sys_mod_count&gt;34&lt;/sys_mod_count&gt;&lt;sys_name&gt;Export to XML&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package display_value="System Update Sets (with remote update set support)" source="com.glide.system_update_set"&gt;77495a150f32310016ee22d8b1050e47&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;true&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_action_fb1a56050a0a3c1e01f8b4066aff9aa7&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;jdsiegri&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-06-07 18:41:24&lt;/sys_updated_on&gt;&lt;table&gt;sys_update_set&lt;/table&gt;&lt;ui11_compatible&gt;true&lt;/ui11_compatible&gt;&lt;ui16_compatible&gt;false&lt;/ui16_compatible&gt;&lt;/sys_ui_action&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Create Bulk Update Set Download 3">5b2c4988db3b8300497856f3ce96198e</remote_update_set><replace_on_upgrade>true</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>1f2c4988db3b8300497856f3ce96198f</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><table>sys_update_set</table><target_name>Export to XML</target_name><type>UI Action</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_action_eca3552f4fc7ba00e0339ffd0210c7be</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="sys_ui_action"&gt;&lt;sys_ui_action action="INSERT_OR_UPDATE"&gt;&lt;action_name&gt;export_all&lt;/action_name&gt;&lt;active&gt;true&lt;/active&gt;&lt;client&gt;true&lt;/client&gt;&lt;comments/&gt;&lt;condition&gt;gs.hasRole('admin')&lt;/condition&gt;&lt;form_action&gt;false&lt;/form_action&gt;&lt;form_button&gt;false&lt;/form_button&gt;&lt;form_context_menu&gt;false&lt;/form_context_menu&gt;&lt;form_link&gt;false&lt;/form_link&gt;&lt;hint&gt;Create a Retrieved Update Set for exporting&lt;/hint&gt;&lt;list_action&gt;true&lt;/list_action&gt;&lt;list_banner_button&gt;false&lt;/list_banner_button&gt;&lt;list_button&gt;false&lt;/list_button&gt;&lt;list_choice&gt;true&lt;/list_choice&gt;&lt;list_context_menu&gt;true&lt;/list_context_menu&gt;&lt;list_link&gt;false&lt;/list_link&gt;&lt;list_save_with_form_button&gt;false&lt;/list_save_with_form_button&gt;&lt;name&gt;Export Selected to XML (bulk)&lt;/name&gt;&lt;onclick&gt;bulkExport();&lt;/onclick&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[function bulkExport() {
+	
+	var ids = g_list.getChecked();
+	var sets = ids.split(',');
+
+	for( var i=0,L=sets.length; i&lt;L; i++ ) {
+
+		window.open("export_as_remote_update_set.do?sysparam_table=sys_update_set&amp;sysparam_sys_id=" + sets[i] );  
+	}
+}
+]]&gt;&lt;/script&gt;&lt;show_insert&gt;true&lt;/show_insert&gt;&lt;show_multiple_update&gt;false&lt;/show_multiple_update&gt;&lt;show_query&gt;false&lt;/show_query&gt;&lt;show_update&gt;true&lt;/show_update&gt;&lt;sys_class_name&gt;sys_ui_action&lt;/sys_class_name&gt;&lt;sys_created_by&gt;justin.ciemiewicz&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-06-05 12:15:12&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_domain_path&gt;/&lt;/sys_domain_path&gt;&lt;sys_id&gt;eca3552f4fc7ba00e0339ffd0210c7be&lt;/sys_id&gt;&lt;sys_mod_count&gt;13&lt;/sys_mod_count&gt;&lt;sys_name&gt;Export Selected to XML (bulk)&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_action_eca3552f4fc7ba00e0339ffd0210c7be&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;justin.ciemiewicz&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-06-07 19:09:57&lt;/sys_updated_on&gt;&lt;table&gt;sys_update_set&lt;/table&gt;&lt;ui11_compatible&gt;true&lt;/ui11_compatible&gt;&lt;ui16_compatible&gt;true&lt;/ui16_compatible&gt;&lt;/sys_ui_action&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Create Bulk Update Set Download 3">5b2c4988db3b8300497856f3ce96198e</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>5b2c4988db3b8300497856f3ce96198f</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><table>sys_update_set</table><target_name>Export Selected to XML (bulk)</target_name><type>UI Action</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_processor_327a5c5c4f5f3e00e0339ffd0210c7e0</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_processor"&gt;&lt;sys_processor action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;class_name/&gt;&lt;description&gt;Bulk export of UDATE SETS&lt;/description&gt;&lt;interactive&gt;false&lt;/interactive&gt;&lt;name&gt;ExportAsRemoteUpdateSet&lt;/name&gt;&lt;parameters/&gt;&lt;params_endpoint/&gt;&lt;path&gt;export_as_remote_update_set&lt;/path&gt;&lt;path_endpoint/&gt;&lt;require_csrf&gt;false&lt;/require_csrf&gt;&lt;roles/&gt;&lt;script&gt;&lt;![CDATA[(function process(g_request, g_response, g_processor) {
+
+	var sysidLocal = g_request.getParameter('sysparam_sys_id');
+	var fileName = g_request.getParameter('sysparam_file_name');
+	var source_table = g_request.getParameter('sysparam_table');
+
+	if( source_table == 'sys_update_set' ) {
+
+		var grUpdateSet = new GlideRecord('sys_update_set');
+		
+		if (grUpdateSet.get(sysidLocal)) {
+			
+			var grRetrievedUpdateSet = new GlideRecord('sys_remote_update_set');
+				grRetrievedUpdateSet.initialize();
+				grRetrievedUpdateSet.description = grUpdateSet.description;
+				grRetrievedUpdateSet.name = grUpdateSet.name;
+				grRetrievedUpdateSet.release_date = grUpdateSet.release_date;
+				grRetrievedUpdateSet.remote_sys_id = grUpdateSet.sys_id;
+				grRetrievedUpdateSet.application = grUpdateSet.application;
+				grRetrievedUpdateSet.state = "loaded";
+			
+			if( !fileName || fileName == '' ) {
+				fileName = grUpdateSet.getValue('name')+'.xml';
+			}
+
+			var grScope = new GlideRecord('sys_scope');
+				grScope.get(grUpdateSet.application);
+			
+			if (grScope.isValid()) {
+				grRetrievedUpdateSet.application_name = grScope.name;
+				grRetrievedUpdateSet.application_scope = grScope.scope;
+				grRetrievedUpdateSet.application_version = grScope.version;
+			}
+
+			var sysidRetrieved;
+
+			if (sysidRetrieved = grRetrievedUpdateSet.insert()) {
+
+				var grUpdateXML = new GlideRecord('sys_update_xml');
+				grUpdateXML.addQuery('update_set', sysidLocal);
+				grUpdateXML.query();
+
+				while(grUpdateXML.next()) {
+					grUpdateXML.remote_update_set = sysidRetrieved;
+					grUpdateXML.update_set = '';
+					grUpdateXML.insert();
+				}
+
+				var exporter = new ExportWithRelatedListsMine('sys_remote_update_set', sysidRetrieved);
+				if (fileName) {
+					exporter.setFileName(fileName);
+				}
+				exporter.addRelatedList('sys_update_xml', 'remote_update_set');
+				exporter.exportRecords(g_response);
+
+				grUpdateXML = new GlideRecord('sys_update_xml');
+				grUpdateXML.addQuery('remote_update_set', sysidRetrieved);
+				grUpdateXML.query();
+				grUpdateXML.deleteMultiple();
+				grRetrievedUpdateSet = new GlideRecord('sys_remote_update_set');
+				grRetrievedUpdateSet.get(sysidRetrieved);
+				grRetrievedUpdateSet.deleteRecord();
+			}
+		}
+	}
+
+	else if( source_table == 'sys_remote_update_set' ) {
+
+		if( !fileName || fileName == ''  ) {
+			var retrSet = new GlideRecord('sys_remote_update_set');
+			if( retrSet.get( sysidLocal) ) {
+				fileName = retrSet.getValue('name')+'.xml';
+			}
+		}
+
+		var exporter = new ExportWithRelatedListsMine('sys_remote_update_set', sysidLocal );
+		if (fileName) {
+			exporter.setFileName(fileName);
+		}
+		exporter.addRelatedList('sys_update_xml', 'remote_update_set');
+		exporter.exportRecords(g_response);
+	}
+
+})(g_request, g_response, g_processor);]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_processor&lt;/sys_class_name&gt;&lt;sys_created_by&gt;jdsiegri&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-06-07 16:01:56&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;327a5c5c4f5f3e00e0339ffd0210c7e0&lt;/sys_id&gt;&lt;sys_mod_count&gt;7&lt;/sys_mod_count&gt;&lt;sys_name&gt;ExportAsRemoteUpdateSet&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_processor_327a5c5c4f5f3e00e0339ffd0210c7e0&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;justin.ciemiewicz&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-06-07 19:28:35&lt;/sys_updated_on&gt;&lt;type&gt;script&lt;/type&gt;&lt;/sys_processor&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Create Bulk Update Set Download 3">5b2c4988db3b8300497856f3ce96198e</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>5f2c4988db3b8300497856f3ce96198e</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><table/><target_name>ExportAsRemoteUpdateSet</target_name><type>Processor</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_action_ea755c184f5f3e00e0339ffd0210c7de</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="sys_ui_action"&gt;&lt;sys_ui_action action="INSERT_OR_UPDATE"&gt;&lt;action_name&gt;export_all&lt;/action_name&gt;&lt;active&gt;true&lt;/active&gt;&lt;client&gt;true&lt;/client&gt;&lt;comments/&gt;&lt;condition&gt;gs.hasRole('admin')&lt;/condition&gt;&lt;form_action&gt;false&lt;/form_action&gt;&lt;form_button&gt;false&lt;/form_button&gt;&lt;form_context_menu&gt;false&lt;/form_context_menu&gt;&lt;form_link&gt;false&lt;/form_link&gt;&lt;hint&gt;Create a Retrieved Update Set for exporting&lt;/hint&gt;&lt;list_action&gt;true&lt;/list_action&gt;&lt;list_banner_button&gt;false&lt;/list_banner_button&gt;&lt;list_button&gt;false&lt;/list_button&gt;&lt;list_choice&gt;true&lt;/list_choice&gt;&lt;list_context_menu&gt;true&lt;/list_context_menu&gt;&lt;list_link&gt;false&lt;/list_link&gt;&lt;list_save_with_form_button&gt;false&lt;/list_save_with_form_button&gt;&lt;name&gt;Export Selected to XML (bulk)&lt;/name&gt;&lt;onclick&gt;bulkExport();&lt;/onclick&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[function bulkExport() {
+	
+	var ids = g_list.getChecked();
+	var sets = ids.split(',');
+
+	for( var i=0,L=sets.length; i&lt;L; i++ ) {
+
+		window.open("export_as_remote_update_set.do?sysparam_table=sys_remote_update_set&amp;sysparam_sys_id=" + sets[i] );  
+	}
+}]]&gt;&lt;/script&gt;&lt;show_insert&gt;true&lt;/show_insert&gt;&lt;show_multiple_update&gt;false&lt;/show_multiple_update&gt;&lt;show_query&gt;false&lt;/show_query&gt;&lt;show_update&gt;true&lt;/show_update&gt;&lt;sys_class_name&gt;sys_ui_action&lt;/sys_class_name&gt;&lt;sys_created_by&gt;justin.ciemiewicz&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-06-07 15:39:04&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_domain_path&gt;/&lt;/sys_domain_path&gt;&lt;sys_id&gt;ea755c184f5f3e00e0339ffd0210c7de&lt;/sys_id&gt;&lt;sys_mod_count&gt;5&lt;/sys_mod_count&gt;&lt;sys_name&gt;Export Selected to XML (bulk)&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_action_ea755c184f5f3e00e0339ffd0210c7de&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;justin.ciemiewicz&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-06-07 19:41:38&lt;/sys_updated_on&gt;&lt;table&gt;sys_remote_update_set&lt;/table&gt;&lt;ui11_compatible&gt;true&lt;/ui11_compatible&gt;&lt;ui16_compatible&gt;true&lt;/ui16_compatible&gt;&lt;/sys_ui_action&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Create Bulk Update Set Download 3">5b2c4988db3b8300497856f3ce96198e</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>972c4988db3b8300497856f3ce96198f</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><table>sys_remote_update_set</table><target_name>Export Selected to XML (bulk)</target_name><type>UI Action</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_action_819bdc9c4f5f3e00e0339ffd0210c70f</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="sys_ui_action"&gt;&lt;sys_ui_action action="INSERT_OR_UPDATE"&gt;&lt;action_name&gt;Export to XML - Company&lt;/action_name&gt;&lt;active&gt;true&lt;/active&gt;&lt;client&gt;false&lt;/client&gt;&lt;comments&gt;Export to XML - Company&lt;/comments&gt;&lt;condition&gt;current.state == 'complete'&lt;/condition&gt;&lt;form_action&gt;true&lt;/form_action&gt;&lt;form_button&gt;false&lt;/form_button&gt;&lt;form_context_menu&gt;false&lt;/form_context_menu&gt;&lt;form_link&gt;true&lt;/form_link&gt;&lt;hint&gt;Create a Retrieved Update Set for exporting&lt;/hint&gt;&lt;list_action&gt;false&lt;/list_action&gt;&lt;list_banner_button&gt;false&lt;/list_banner_button&gt;&lt;list_button&gt;false&lt;/list_button&gt;&lt;list_choice&gt;false&lt;/list_choice&gt;&lt;list_context_menu&gt;false&lt;/list_context_menu&gt;&lt;list_link&gt;false&lt;/list_link&gt;&lt;list_save_with_form_button&gt;false&lt;/list_save_with_form_button&gt;&lt;name&gt;Export to XML&lt;/name&gt;&lt;onclick/&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[action.setRedirectURL("export_as_remote_update_set.do?sysparam_sys_id=" + current.sys_id + "&amp;sysparam_file_name=" + current.name + ".xml&amp;sysparam_table=sys_update_set");  
+ ]]&gt;&lt;/script&gt;&lt;show_insert&gt;false&lt;/show_insert&gt;&lt;show_multiple_update&gt;false&lt;/show_multiple_update&gt;&lt;show_query&gt;false&lt;/show_query&gt;&lt;show_update&gt;true&lt;/show_update&gt;&lt;sys_class_name&gt;sys_ui_action&lt;/sys_class_name&gt;&lt;sys_created_by&gt;jdsiegri&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2017-06-07 16:05:44&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_domain_path&gt;/&lt;/sys_domain_path&gt;&lt;sys_id&gt;819bdc9c4f5f3e00e0339ffd0210c70f&lt;/sys_id&gt;&lt;sys_mod_count&gt;4&lt;/sys_mod_count&gt;&lt;sys_name&gt;Export to XML&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_action_819bdc9c4f5f3e00e0339ffd0210c70f&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;justin.ciemiewicz&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-06-07 19:40:15&lt;/sys_updated_on&gt;&lt;table&gt;sys_update_set&lt;/table&gt;&lt;ui11_compatible&gt;true&lt;/ui11_compatible&gt;&lt;ui16_compatible&gt;false&lt;/ui16_compatible&gt;&lt;/sys_ui_action&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Create Bulk Update Set Download 3">5b2c4988db3b8300497856f3ce96198e</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-01-16 17:42:07</sys_created_on><sys_id>d32c4988db3b8300497856f3ce96198f</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-01-16 17:42:07</sys_updated_on><table>sys_update_set</table><target_name>Export to XML</target_name><type>UI Action</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml></unload>
