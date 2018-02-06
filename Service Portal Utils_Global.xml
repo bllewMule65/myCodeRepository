@@ -1,1 +1,220 @@
-<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2018-02-06 16:45:49"><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description/><inserted/><name>Service Portal Utils</name><origin_sys_id/><release_date/><remote_sys_id>de784172db48d7005dbe38f0ad961911</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-02-06 16:45:49</sys_created_on><sys_id>97a88d32db48d7005dbe38f0ad9619db</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-02-06 16:45:49</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set>undefined</unload>
+<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2018-02-06 19:00:59"><sys_remote_update_set><application display_value="Global">global</application><application_name>Global</application_name><application_scope>global</application_scope><application_version/><collisions/><commit_date/><deleted/><description/><inserted/><name>Service Portal Utils</name><origin_sys_id/><release_date/><remote_sys_id>de784172db48d7005dbe38f0ad961911</remote_sys_id><state>loaded</state><summary/><sys_class_name>sys_remote_update_set</sys_class_name><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-02-06 19:00:59</sys_created_on><sys_id>539721b2db08d700497856f3ce961920</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-02-06 19:00:59</sys_updated_on><update_set/><update_source/><updated/></sys_remote_update_set><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_ui_script_9db0d936db48d7005dbe38f0ad961988</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_ui_script"&gt;&lt;sys_ui_script action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;description/&gt;&lt;global&gt;false&lt;/global&gt;&lt;name&gt;sp_utils&lt;/name&gt;&lt;script&gt;&lt;![CDATA[var sp_utils = {
+	
+	getQuestionChoices: function(variableName){
+		if(!variableName){
+			return false;
+		}
+		
+		var variableID = this.getControl(variableName).id;
+		if(!variableID){
+			return 'No id found for variable name';
+		}
+		
+		var questionChoiceObj = {
+		};
+		
+		var hostLocation = window.location.host + '';
+		var requestBody = "";
+		var client = new XMLHttpRequest();
+		//Updated to also get variables from variable sets on the
+		client.open("get", "https://" + hostLocation +
+		"/api/now/table/question_choice?sysparm_query=question="+variableID);
+		client.setRequestHeader('Accept', 'application/json');
+		client.setRequestHeader('Content-Type', 'application/json');
+		client.setRequestHeader('X-UserToken', g_ck);
+		
+		client.onreadystatechange = function() {
+			if (this.readyState == this.DONE) {
+				if (this.status == 200 || this.status == 201) {
+					var choices = JSON.parse(this.response).result;
+					
+					for (i = 0; i &lt; choices.length; i++) {
+						questionChoiceObj[choices[i].value]={
+							text:choices[i].text,
+							value:choices[i].value,
+							order:choices[i].order
+						};
+					}
+					
+				} else {
+					console.error('getFieldOptions Error: ' + this.status + " : " + this.response);
+				}
+			}
+		};
+		
+		client.send(requestBody);
+		
+		return questionChoiceObj;
+	},
+	
+	getSysChoicesByQuery: function(query){
+		if(!query){
+			return false;
+		}
+		
+		var sysChoiceObj = {
+		};
+		
+		var hostLocation = window.location.host + '';
+		var requestBody = "";
+		var client = new XMLHttpRequest();
+		client.open("get", "https://" + hostLocation +
+		"/api/now/table/sys_choice?sysparm_query="+query);
+		client.setRequestHeader('Accept', 'application/json');
+		client.setRequestHeader('Content-Type', 'application/json');
+		client.setRequestHeader('X-UserToken', g_ck);
+		
+		client.onreadystatechange = function() {
+			if (this.readyState == this.DONE) {
+				if (this.status == 200 || this.status == 201) {
+					var choices = JSON.parse(this.response).result;
+					
+					for (i = 0; i &lt; choices.length; i++) {
+						sysChoiceObj[choices[i].value]={
+							label:choices[i].label,
+							value:choices[i].value,
+							sequence:choices[i].sequence
+						};
+					}
+					
+				} else {
+					console.error('getFieldOptions Error: ' + this.status + " : " + this.response);
+				}
+			}
+		};
+		
+		client.send(requestBody);
+		
+		return sysChoiceObj;
+	},
+	
+	getAttachments: function() {
+		var i, attachmentElement;
+		var catalogAttachments = [];
+		
+		// Get the list of attachments.
+		var attachmentElements = angular.element("#sc_cat_item").scope().attachments;
+		
+		//For each attachment document element returned from the angular call
+		for (i = 0; i &lt; attachmentElements.length; i++) {
+			attachmentElement = attachmentElements[i];
+			
+			//Push a constructed CatalogAttachment object into the array
+			catalogAttachments.push(
+			//Construct a new CatalogAttachment object, for inclusion in the returned array of attachment data.
+			new this._CatalogAttachment(
+			attachmentElement.file_name,
+			attachmentElement.ext,
+			attachmentElement.sys_id,
+			attachmentElement.size
+			)
+			);
+		}
+		return catalogAttachments;
+	},
+	
+	_CatalogAttachment: function(file_name, file_extension, sysID, file_size) {
+		this.file_name = file_name;
+		this.file_extension = file_extension;
+		this.sysID = sysID;
+		this.file_size = file_size;
+	}
+};
+
+getVariables();
+
+/**
+ * This function extends the sp_utils object, and adds the 'variables' object, as well as the getElement() and getControl() methods.
+ */
+function getVariables() {
+	var i, varz, vSid, vName, vLabel, catalogItemSid;
+	
+	var itemVariables = {
+	};
+	
+	var hostLocation = window.location.host + '';
+	var sidBegin = window.location.search.indexOf('sys_id=') + 7;
+	var sidEnd = window.location.search.indexOf('&amp;', sidBegin);
+	
+	if (sidEnd &gt;= 0) {
+		catalogItemSid = window.location.search.slice(sidBegin, sidEnd);
+	} else {
+		catalogItemSid = window.location.search.slice(sidBegin);
+	}
+	
+	var requestBody = "";
+	var client = new XMLHttpRequest();
+	//Updated to also get variables from variable sets on the
+	client.open("get", "https://" + hostLocation +
+	"/api/now/table/item_option_new?sysparm_query=sys_idINjavascript%3Anew%20spUtilsAjax().getVarSysIdsForQuery('" +
+	catalogItemSid + "', 'sys_id')" +
+	"%5Eactive%3Dtrue&amp;sysparm_fields=sys_id%2Cname%2Cquestion_text&amp;sysparm_limit=100");
+	client.setRequestHeader('Accept', 'application/json');
+	client.setRequestHeader('Content-Type', 'application/json');
+	client.setRequestHeader('X-UserToken', g_ck);
+	
+	client.onreadystatechange = function() {
+		if (this.readyState == this.DONE) {
+			if (this.status == 200 || this.status == 201) {
+				varz = JSON.parse(this.response).result;
+				
+				for (i = 0; i &lt; varz.length; i++) {
+					try{
+						vSid = varz[i].sys_id;
+						vName = varz[i].name;
+						vLabel = varz[i].question_text;
+
+						itemVariables[vName] = new CatalogItemVariable(
+						varz[i].sys_id,
+						varz[i].name,
+						varz[i].question_text
+						);
+						
+					}catch(err){
+						console.log(varz[i] +' Error: '+err)
+					}
+				}
+				
+				sp_utils.variables = itemVariables;
+				sp_utils.getElement = function(varName) {
+					return document.getElementsByName('IO:' + sp_utils.variables[varName].name);
+				};
+				sp_utils.getControl = function(varName) {
+					return document.getElementById(sp_utils.variables[varName].name);
+				};
+				
+			} else {
+				console.error('Some kind of REST error happened. Error: ' + this.status);
+			}
+		}
+		sp_utils.getVariables = function() {
+			return sp_utils.variables;
+		}
+	};
+	
+	client.send(requestBody);
+}
+
+
+function CatalogItemVariable(variableName, variableSysID, variableQuestion) {
+	this.name = variableName;
+	this.sys_id = variableSysID;
+	this.question = variableQuestion;
+}]]&gt;&lt;/script&gt;&lt;script_name/&gt;&lt;sys_class_name&gt;sys_ui_script&lt;/sys_class_name&gt;&lt;sys_created_by&gt;brent.llewellyn&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-02-06 18:16:19&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;9db0d936db48d7005dbe38f0ad961988&lt;/sys_id&gt;&lt;sys_mod_count&gt;7&lt;/sys_mod_count&gt;&lt;sys_name&gt;sp_utils&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_script_9db0d936db48d7005dbe38f0ad961988&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;brent.llewellyn&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-02-06 18:58:46&lt;/sys_updated_on&gt;&lt;use_scoped_format&gt;false&lt;/use_scoped_format&gt;&lt;/sys_ui_script&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Service Portal Utils">539721b2db08d700497856f3ce961920</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-02-06 19:00:59</sys_created_on><sys_id>579721b2db08d700497856f3ce961921</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-02-06 19:00:59</sys_updated_on><table/><target_name>sp_utils</target_name><type>UI Script</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sys_script_include_8c416d3edb48d7005dbe38f0ad9619a4</name><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_script_include"&gt;&lt;sys_script_include action="INSERT_OR_UPDATE"&gt;&lt;access&gt;package_private&lt;/access&gt;&lt;active&gt;true&lt;/active&gt;&lt;api_name&gt;global.spUtilsAjax&lt;/api_name&gt;&lt;client_callable&gt;true&lt;/client_callable&gt;&lt;description/&gt;&lt;name&gt;spUtilsAjax&lt;/name&gt;&lt;script&gt;&lt;![CDATA[var spUtilsAjax = Class.create();
+spUtilsAjax.prototype = Object.extendsObject(AbstractAjaxProcessor, {
+    
+    getVarSysIdsForQuery: function(itemSid, fieldName) {
+        if (!fieldName) {
+            fieldName = 'sys_id';
+        }
+        var a = [];
+        var item = GlideappCatalogItem.get(itemSid);
+        var variables = item.getVariables();
+        while (variables.next()) {
+            a.push(variables[fieldName].toString());
+        }
+        return a.join(',');
+    },
+    
+    type: 'spUtilsAjax'
+});]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_script_include&lt;/sys_class_name&gt;&lt;sys_created_by&gt;brent.llewellyn&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-02-06 18:34:48&lt;/sys_created_on&gt;&lt;sys_customer_update&gt;true&lt;/sys_customer_update&gt;&lt;sys_id&gt;8c416d3edb48d7005dbe38f0ad9619a4&lt;/sys_id&gt;&lt;sys_mod_count&gt;5&lt;/sys_mod_count&gt;&lt;sys_name&gt;spUtilsAjax&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_replace_on_upgrade&gt;false&lt;/sys_replace_on_upgrade&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_script_include_8c416d3edb48d7005dbe38f0ad9619a4&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;brent.llewellyn&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-02-06 19:00:16&lt;/sys_updated_on&gt;&lt;/sys_script_include&gt;&lt;/record_update&gt;</payload><remote_update_set display_value="Service Portal Utils">539721b2db08d700497856f3ce961920</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-02-06 19:00:59</sys_created_on><sys_id>939721b2db08d700497856f3ce961921</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-02-06 19:00:59</sys_updated_on><table/><target_name>spUtilsAjax</target_name><type>Script Include</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml><sys_update_xml><action>INSERT_OR_UPDATE</action><application display_value="Global">global</application><category>customer</category><comments/><name>sp_js_include_ddadd1badb48d7005dbe38f0ad9619d6</name><payload><![CDATA[<record_update table="sp_js_include"><sp_js_include action="INSERT_OR_UPDATE"><display_name>sp_utils</display_name><source>local</source><sys_class_name>sp_js_include</sys_class_name><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-02-06 18:17:50</sys_created_on><sys_customer_update>true</sys_customer_update><sys_id>ddadd1badb48d7005dbe38f0ad9619d6</sys_id><sys_mod_count>0</sys_mod_count><sys_name>sp_utils</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_replace_on_upgrade>false</sys_replace_on_upgrade><sys_scope display_value="Global">global</sys_scope><sys_ui_script display_value="sp_util">9db0d936db48d7005dbe38f0ad961988</sys_ui_script><sys_update_name>sp_js_include_ddadd1badb48d7005dbe38f0ad9619d6</sys_update_name><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-02-06 18:17:50</sys_updated_on><url/></sp_js_include></record_update>]]></payload><remote_update_set display_value="Service Portal Utils">539721b2db08d700497856f3ce961920</remote_update_set><replace_on_upgrade>false</replace_on_upgrade><sys_created_by>brent.llewellyn</sys_created_by><sys_created_on>2018-02-06 19:00:59</sys_created_on><sys_id>db9721b2db08d700497856f3ce961920</sys_id><sys_mod_count>0</sys_mod_count><sys_updated_by>brent.llewellyn</sys_updated_by><sys_updated_on>2018-02-06 19:00:59</sys_updated_on><table/><target_name>sp_utils</target_name><type>JS Include</type><update_domain>global</update_domain><update_set/><view/></sys_update_xml></unload>
